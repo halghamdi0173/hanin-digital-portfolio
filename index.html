@@ -197,7 +197,7 @@ function render(){
    <h3>${safe(e.title)}</h3><p>${safe(e.description)}</p>
    ${image?'<img class="preview" src="'+safe(u)+'" alt="صورة الشاهد">':''}
    ${u?'<p><a class="filelink" href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">فتح الشاهد ↗</a></p>':''}
-   ${admin?'<button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button>':''}
+${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
   </article>`;
  }).join("")+'</div>';
  if(!list.length)html+='<div class="empty">لا توجد شواهد منشورة في هذا القسم حتى الآن.</div>';
@@ -289,6 +289,60 @@ document.getElementById("saveButton").onclick=async()=>{
   if(path)await db.storage.from("portfolio-files").remove([path]);
  }finally{b.disabled=false;}
 };
+ 
+let editingId = null;
+
+function openEdit(id) {
+  if (!admin) return;
+
+  const item = evidence.find(e => e.id === id);
+  if (!item) return;
+
+  editingId = id;
+
+  const title = prompt("تعديل اسم الشاهد:", item.title || "");
+  if (title === null) return;
+  if (!title.trim()) {
+    alert("اسم الشاهد لا يمكن أن يكون فارغًا");
+    return;
+  }
+
+  const description = prompt(
+    "تعديل وصف الشاهد:",
+    item.description || ""
+  );
+  if (description === null) return;
+
+  saveEditedEvidence({
+    title: title.trim(),
+    description: description.trim()
+  });
+}
+
+async function saveEditedEvidence(changes) {
+  if (!admin || !editingId) return;
+
+  const { data, error } = await db
+    .from("evidence")
+    .update(changes)
+    .eq("id", editingId)
+    .select("id");
+
+  if (error) {
+    alert("تعذر حفظ التعديل: " + error.message);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert("لم يتم تحديث الشاهد. تحققي من صلاحيات الإدارة.");
+    return;
+  }
+
+  editingId = null;
+  await loadEvidence();
+  alert("تم حفظ التعديل بنجاح");
+}
+
 async function removeEvidence(id){
  if(!admin||!confirm("هل تريدين حذف بطاقة الشاهد؟"))return;
  const {error}=await db.from("evidence").delete().eq("id",id);
