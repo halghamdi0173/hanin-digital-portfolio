@@ -110,35 +110,6 @@ label{font-size:13px;color:#f0e9ff}
  </div>
 </div>
 
-<div class="modal-bg hidden" id="editModal">
-  <div class="modal">
-    <h2>✏️ تعديل الشاهد</h2>
-
-    <label>عنوان الشاهد</label>
-    <input id="editTitle" maxlength="180">
-
-    <label>القسم</label>
-    <select id="editSection"></select>
-
-    <label>الوصف</label>
-    <textarea id="editDescription" rows="3"></textarea>
-
-    <label>استبدال الصورة أو ملف PDF (اختياري)</label>
-    <input id="editFile" type="file" accept="image/*,.pdf">
-
-    <label>رابط الشاهد (اختياري)</label>
-    <input id="editLink" type="url" placeholder="https://">
-
-    <div class="actions">
-      <button class="btn" id="updateButton">حفظ التعديلات</button>
-      <button class="btn secondary"
-        onclick="closeModal('editModal')">إلغاء</button>
-    </div>
-
-    <p id="editMessage"></p>
-  </div>
-</div>
-
 <script>
 const SUPABASE_URL="https://dsaekbuosimyeubmuinh.supabase.co";
 const SUPABASE_KEY="sb_publishable_xDPSz6NdX_KMCxnNTtOk8Q_NVJr9Juw";
@@ -226,7 +197,7 @@ function render(){
    <h3>${safe(e.title)}</h3><p>${safe(e.description)}</p>
    ${image?'<img class="preview" src="'+safe(u)+'" alt="صورة الشاهد">':''}
    ${u?'<p><a class="filelink" href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">فتح الشاهد ↗</a></p>':''}
-${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
+   ${admin?'<button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button>':''}
   </article>`;
  }).join("")+'</div>';
  if(!list.length)html+='<div class="empty">لا توجد شواهد منشورة في هذا القسم حتى الآن.</div>';
@@ -318,150 +289,7 @@ document.getElementById("saveButton").onclick=async()=>{
   if(path)await db.storage.from("portfolio-files").remove([path]);
  }finally{b.disabled=false;}
 };
-
-let editingEvidenceId = null;
-
-function openEdit(id) {
-  if (!admin) return;
-
-  const item = evidence.find(e => e.id === id);
-  if (!item) return;
-
-  editingEvidenceId = id;
-
-  document.getElementById("editTitle").value = item.title || "";
-  document.getElementById("editDescription").value = item.description || "";
-  document.getElementById("editFile").value = "";
-  document.getElementById("editMessage").textContent = "";
-
-  const options = sections.flatMap(s => s.sub || [s.name]);
-  const sectionSelect = document.getElementById("editSection");
-
-  sectionSelect.innerHTML = options.map(s =>
-    '<option value="' + safe(s) + '">' + safe(s) + '</option>'
-  ).join("");
-
-  sectionSelect.value = item.section;
-
-  const url = item.file_url || "";
-  const isStoredFile = url.includes(
-    "/storage/v1/object/public/portfolio-files/"
-  );
-
-  document.getElementById("editLink").value =
-    isStoredFile ? "" : url;
-
-  document.getElementById("editModal").classList.remove("hidden");
-}
-
-document.getElementById("updateButton").onclick = async () => {
-  if (!admin || !editingEvidenceId) return;
-
-  const button = document.getElementById("updateButton");
-  const message = document.getElementById("editMessage");
-
-  const title = document.getElementById("editTitle").value.trim();
-  const section = document.getElementById("editSection").value;
-  const description =
-    document.getElementById("editDescription").value.trim();
-  const file = document.getElementById("editFile").files[0];
-  const link = document.getElementById("editLink").value.trim();
-
-  if (!title) {
-    message.textContent = "يرجى كتابة عنوان الشاهد";
-    return;
-  }
-
-  if (file && file.size > 10 * 1024 * 1024) {
-    message.textContent = "حجم الملف يجب ألا يتجاوز 10 ميجابايت";
-    return;
-  }
-
-  const allowedTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif"
-  ];
-
-  if (file && !allowedTypes.includes(file.type)) {
-    message.textContent = "اختاري صورة أو ملف PDF فقط";
-    return;
-  }
-
-  if (link && !validUrl(link)) {
-    message.textContent = "الرابط غير صحيح";
-    return;
-  }
-
-  button.disabled = true;
-  message.textContent = "جارٍ حفظ التعديلات...";
-
-  let uploadedPath = "";
-
-  try {
-    const original = evidence.find(
-      e => e.id === editingEvidenceId
-    );
-
-    if (!original) throw new Error("لم يتم العثور على الشاهد");
-
-    const changes = { title, section, description };
-
-    if (file) {
-      const extension = file.name.split(".").pop().toLowerCase();
-      uploadedPath = crypto.randomUUID() + "." + extension;
-
-      const { error: uploadError } = await db.storage
-        .from("portfolio-files")
-        .upload(uploadedPath, file, {
-          contentType: file.type
-        });
-
-      if (uploadError) throw uploadError;
-
-      changes.file_url = db.storage
-        .from("portfolio-files")
-        .getPublicUrl(uploadedPath).data.publicUrl;
-
-      changes.file_type = file.type;
-
-    } else if (link) {
-      changes.file_url = validUrl(link);
-      changes.file_type = "link";
-    }
-
-    const { data, error } = await db
-      .from("evidence")
-      .update(changes)
-      .eq("id", editingEvidenceId)
-      .select("id");
-
-    if (error) throw error;
-
-    if (!data || data.length === 0) {
-      throw new Error("لم يتم تحديث الشاهد. تحققي من صلاحيات الإدارة.");
-    }
-
-    closeModal("editModal");
-    editingEvidenceId = null;
-
-    await loadEvidence();
-
-  } catch (error) {
-    message.textContent = "تعذر التعديل: " + error.message;
-
-    if (uploadedPath) {
-      await db.storage
-        .from("portfolio-files")
-        .remove([uploadedPath]);
-    }
-
-  } finally {
-    button.disabled = false;
-  }
-};
+async function removeEvidence(id){
  if(!admin||!confirm("هل تريدين حذف بطاقة الشاهد؟"))return;
  const {error}=await db.from("evidence").delete().eq("id",id);
  if(error)alert(error.message);
