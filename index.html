@@ -331,8 +331,8 @@ async function openEdit(id) {
   picker.type = "file";
   picker.accept = "image/png,image/jpeg,image/webp,image/gif,application/pdf";
 
-  picker.onchange = async () => {
-    const file = picker.files[0];
+picker.onchange = async () => {
+  picker.remove();    const file = picker.files[0];
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
@@ -391,8 +391,8 @@ async function openEdit(id) {
     }
   };
 
-  picker.click();
-
+document.body.appendChild(picker);
+picker.click();
 }
 
 async function saveEditedEvidence(changes) {
