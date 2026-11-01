@@ -292,8 +292,8 @@ document.getElementById("saveButton").onclick=async()=>{
  
 let editingId = null;
 
-function openEdit(id) {
-  if (!admin) return;
+async function openEdit(id) {
+ if (!admin) return;
 
   const item = evidence.find(e => e.id === id);
   if (!item) return;
@@ -313,10 +313,86 @@ function openEdit(id) {
   );
   if (description === null) return;
 
-  saveEditedEvidence({
+  const changes = {
     title: title.trim(),
     description: description.trim()
-  });
+  };
+
+  const replaceFile = confirm(
+    "هل تريدين استبدال صورة الشاهد أو ملف PDF؟"
+  );
+
+  if (!replaceFile) {
+    await saveEditedEvidence(changes);
+    return;
+  }
+
+  const picker = document.createElement("input");
+  picker.type = "file";
+  picker.accept = "image/png,image/jpeg,image/webp,image/gif,application/pdf";
+
+  picker.onchange = async () => {
+    const file = picker.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("حجم الملف يجب ألا يتجاوز 10 ميجابايت");
+      return;
+    }
+
+    const allowed = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/gif",
+      "application/pdf"
+    ];
+
+    if (!allowed.includes(file.type)) {
+      alert("اختاري صورة أو ملف PDF فقط");
+      return;
+    }
+
+    const extension = file.name.split(".").pop().toLowerCase();
+    const path = crypto.randomUUID() + "." + extension;
+
+    try {
+      const { error } = await db.storage
+        .from("portfolio-files")
+        .upload(path, file, { contentType: file.type });
+
+      if (error) throw error;
+
+      changes.file_url = db.storage
+        .from("portfolio-files")
+        .getPublicUrl(path).data.publicUrl;
+
+      changes.file_type = file.type;
+
+      const { data, error: updateError } = await db
+        .from("evidence")
+        .update(changes)
+        .eq("id", editingId)
+        .select("id");
+
+      if (updateError) throw updateError;
+
+      if (!data || data.length === 0) {
+        throw new Error("لم يتم تحديث الشاهد");
+      }
+
+      editingId = null;
+      await loadEvidence();
+      alert("تم استبدال الملف وحفظ التعديلات بنجاح");
+
+    } catch (error) {
+      await db.storage.from("portfolio-files").remove([path]);
+      alert("تعذر استبدال الملف: " + error.message);
+    }
+  };
+
+  picker.click();
+
 }
 
 async function saveEditedEvidence(changes) {
