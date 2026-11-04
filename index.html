@@ -209,9 +209,22 @@ if(current===0){
     </button>
    `).join("")}
   </div>
+ 
+  ${page.id==="introduction"?`
+   <div style="background:linear-gradient(135deg,#30204f,#49366d);border:1px solid #bba1e080;border-radius:22px;padding:30px 22px;margin-bottom:22px;text-align:center;box-shadow:0 8px 30px #00000020">
+    <div style="color:#e8d5ff;font-size:25px;margin-bottom:16px">۞</div>
+    <p style="font-size:clamp(20px,3vw,29px);line-height:2.4;color:#fff7e9;font-family:serif;margin:0">
+     ﴿ وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ ﴾
+    </p>
+    <div style="color:#d7bbff;font-size:13px;margin-top:16px">
+     سورة التوبة — الآية 105 (مقتطف)
+    </div>
+   </div>
+  `:""}
   <div class="card" id="portfolio-text">
    <p>جاري تحميل المحتوى...</p>
   </div>
+
  `;
  loadPortfolioText(page.id);
  return;
