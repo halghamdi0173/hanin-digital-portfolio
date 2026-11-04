@@ -188,6 +188,35 @@ function render(){
   "</div>";
   return;
  }
+ 
+if(current===0){
+ const pages=[
+  {id:"introduction",name:"المقدمة"},
+  {id:"vision_mission",name:"الرؤية والرسالة"},
+  {id:"education_goals",name:"الأهداف العامة لسياسة التعليم في المملكة العربية السعودية"}
+ ];
+ const page=pages.find(p=>p.name===subCurrent)||pages[0];
+ el.innerHTML=`
+  <div class="hero">
+   <span class="tag">ملف الإنجاز / المقدمة</span>
+   <h1>📖 ${safe(page.name)}</h1>
+  </div>
+  <div class="subnav">
+   ${pages.map(p=>`
+    <button class="${page.id===p.id?'selected':''}"
+     onclick="openSection(0,'${p.name}')">
+     ${safe(p.name)}
+    </button>
+   `).join("")}
+  </div>
+  <div class="card" id="portfolio-text">
+   <p>جاري تحميل المحتوى...</p>
+  </div>
+ `;
+ loadPortfolioText(page.id);
+ return;
+}
+
  const s=sections[current];
  let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
  <h1>${s.icon} ${safe(s.name)}</h1>
@@ -218,6 +247,55 @@ ${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\'
  if(!list.length)html+='<div class="empty">لا توجد شواهد منشورة في هذا القسم حتى الآن.</div>';
  el.innerHTML=html;
 }
+ 
+async function loadPortfolioText(pageId){
+ const box=document.getElementById("portfolio-text");
+ if(!box)return;
+
+ try{
+  const {data,error}=await db
+   .from("portfolio_content")
+   .select("content")
+   .eq("id",pageId)
+   .single();
+
+  if(error)throw error;
+
+  if(!document.getElementById("portfolio-text"))return;
+
+  const content=data?.content||"";
+ 
+box.innerHTML=`
+ <div style="white-space:pre-wrap;line-height:2;text-align:right">
+  ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
+ </div>
+ ${admin?`
+  <div class="actions" style="margin-top:20px">
+   <button class="btn" onclick="editPortfolioText('${pageId}')">
+    ✏️ تعديل المحتوى
+   </button>
+  </div>
+ `:""}
+`;
+
+ }catch(error){
+  box.textContent="تعذر تحميل المحتوى. يرجى المحاولة لاحقًا.";
+  console.error(error);
+ }
+}
+loadPortfolioText(page.id);
+ return;
+}
+
+ const s=sections[current];
+ let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
+ <h1>${s.icon} ${safe(s.name)}</h1>
+ <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
+ if(s.sub){
+  html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
+  '" onclick="openSection('+current+')">جميع الشواهد</button>';
+  s.sub.forEach((v,j)=>{
+   html+='<button class="'+(subCurrent===v?'selected':'')+
 function closeModal(id){document.getElementById(id).classList.add("hidden");}
 function openAdd(){
  if(!admin)return;
