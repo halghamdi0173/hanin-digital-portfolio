@@ -289,11 +289,31 @@ box.innerHTML=`
 
   </div>
  `
+ 
+ : pageId==="education_goals" && content.trim()
+ ? `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">
+   ${content.split(/\n\s*\n/).filter(x=>x.trim()).map((goal,i)=>`
+    <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:24px">
+     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <span style="background:#a984f0;color:#17122d;border-radius:12px;padding:10px 14px;font-weight:bold">
+       ${String(i+1).padStart(2,"0")}
+      </span>
+      <h3 style="margin:0;color:#d7bbff">الهدف ${i+1}</h3>
+     </div>
+     <p style="white-space:pre-wrap;line-height:2;margin:0">
+      ${safe(goal.trim())}
+     </p>
+    </div>
+   `).join("")}
+  </div>
+ `
  : `
   <div style="white-space:pre-wrap;line-height:2;text-align:right">
    ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
   </div>
  `}
+
 
  ${admin?`
   <div class="actions" style="margin-top:20px">
