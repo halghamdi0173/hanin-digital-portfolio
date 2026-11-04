@@ -266,9 +266,35 @@ async function loadPortfolioText(pageId){
   const content=data?.content||"";
  
 box.innerHTML=`
- <div style="white-space:pre-wrap;line-height:2;text-align:right">
-  ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
- </div>
+
+ ${pageId==="vision_mission" && content.includes("الرسالة")
+ ? `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px">
+
+   <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;text-align:center">
+    <div style="font-size:35px">👁️</div>
+    <h2 style="color:#d7bbff">الرؤية</h2>
+    <p style="white-space:pre-wrap;line-height:2;text-align:right">
+     ${safe(content.split("الرسالة")[0].replace(/^\s*الرؤية\s*[:：]?\s*/,"").trim())}
+    </p>
+   </div>
+
+   <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;text-align:center">
+    <div style="font-size:35px">🎯</div>
+    <h2 style="color:#d7bbff">الرسالة</h2>
+    <p style="white-space:pre-wrap;line-height:2;text-align:right">
+     ${safe(content.split("الرسالة").slice(1).join("الرسالة").replace(/^\s*[:：]?\s*/,"").trim())}
+    </p>
+   </div>
+
+  </div>
+ `
+ : `
+  <div style="white-space:pre-wrap;line-height:2;text-align:right">
+   ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
+  </div>
+ `}
+
  ${admin?`
   <div class="actions" style="margin-top:20px">
    <button class="btn" onclick="editPortfolioText('${pageId}')">
