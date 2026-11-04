@@ -261,7 +261,7 @@ async function loadPortfolioText(pageId){
 
   if(error)throw error;
 
-  if(!document.getElementById("portfolio-text"))return;
+  if(!document.getElementById("portfolio-text") || current!==0)return;
 
   const content=data?.content||"";
  
@@ -283,19 +283,40 @@ box.innerHTML=`
   console.error(error);
  }
 }
-loadPortfolioText(page.id);
- return;
+async function editPortfolioText(pageId){
+ if(!admin)return;
+ const box=document.getElementById("portfolio-text");
+ if(!box)return;
+ const {data,error}=await db.from("portfolio_content")
+  .select("content").eq("id",pageId).single();
+ if(error){alert("تعذر تحميل النص للتعديل: "+error.message);return;}
+ if(!document.getElementById("portfolio-text"))return;
+ box.innerHTML=`
+  <h3>✏️ تعديل المحتوى</h3>
+  <textarea id="portfolio-editor" style="width:100%;min-height:300px;padding:16px;border-radius:14px;line-height:2;font:inherit;direction:rtl;box-sizing:border-box"></textarea>
+  <div class="actions" style="margin-top:16px">
+   <button class="btn" id="save-portfolio-text">💾 حفظ التعديلات</button>
+   <button class="btn secondary" id="cancel-portfolio-text">إلغاء</button>
+  </div>`;
+ document.getElementById("portfolio-editor").value=data?.content||"";
+ document.getElementById("cancel-portfolio-text").onclick=()=>loadPortfolioText(pageId);
+ document.getElementById("save-portfolio-text").onclick=async()=>{
+  const content=document.getElementById("portfolio-editor").value;
+  const button=document.getElementById("save-portfolio-text");
+  button.disabled=true;button.textContent="جاري الحفظ...";
+  const {data:updated,error:saveError}=await db.from("portfolio_content")
+   .update({content,updated_at:new Date().toISOString()})
+   .eq("id",pageId).select("id");
+  if(saveError||!updated?.length){
+   alert("تعذر حفظ التعديلات: "+(saveError?.message||"تحققي من صلاحيات الإدارة"));
+   button.disabled=false;button.textContent="💾 حفظ التعديلات";
+   return;
+  }
+  alert("تم حفظ المحتوى بنجاح");
+  loadPortfolioText(pageId);
+ };
 }
 
- const s=sections[current];
- let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
- <h1>${s.icon} ${safe(s.name)}</h1>
- <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
- if(s.sub){
-  html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
-  '" onclick="openSection('+current+')">جميع الشواهد</button>';
-  s.sub.forEach((v,j)=>{
-   html+='<button class="'+(subCurrent===v?'selected':'')+
 function closeModal(id){document.getElementById(id).classList.add("hidden");}
 function openAdd(){
  if(!admin)return;
