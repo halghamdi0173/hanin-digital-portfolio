@@ -221,6 +221,14 @@ if(current===0){
  let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
  <h1>${s.icon} ${safe(s.name)}</h1>
  <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
+ if(s.name==="إعداد وتنفيذ خطة التعلم" && !subCurrent){
+  html+='<div class="cards">'+s.sub.map((v,j)=>
+   '<div class="card click" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+
+   '<div class="emoji">'+["📚","📝","📒"][j]+'</div><h3>'+safe(v)+'</h3><p>اضغطي لاستعراض الشواهد ←</p></div>'
+  ).join('')+'</div>';
+  el.innerHTML=html;
+  return;
+ }
  if(s.sub){
   html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
   '" onclick="openSection('+current+')">جميع الشواهد</button>';
