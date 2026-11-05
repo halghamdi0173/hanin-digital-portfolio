@@ -32,7 +32,7 @@ button{cursor:pointer}
 .card.click{cursor:pointer}
 .card.click:hover{transform:translateY(-5px);background:#ffffff25;border-color:#d3b2ff}
 .card .emoji{font-size:30px;margin-bottom:16px}
-.card h3{font-size:16px;line-height:1.7;margin:8px 0}
+.card h3{font-size:16px;line-height:1.7;margin:8px 0;color:#F5D88A}
 .card p{font-size:13px;color:#ded5ee;line-height:1.8}
 .btn{border:0;border-radius:12px;background:#a984f0;color:#160e30;padding:12px 18px;font-weight:bold}
 .btn:hover{background:#d0b5ff}
@@ -52,16 +52,6 @@ label{font-size:13px;color:#f0e9ff}
 .empty{padding:35px;text-align:center;color:#e3d7f8;border:1px dashed #ffffff50;border-radius:18px;margin-top:20px}
 .footer{text-align:center;color:#c8b8e2;padding:40px 0 10px;font-size:12px}
 @media(max-width:850px){.layout{display:block}.sidebar{width:100%;padding:12px}.brand{padding:8px}.sidebar nav{display:flex;overflow-x:auto;gap:5px}.nav{min-width:170px;text-align:center}.main{padding:18px}.hero{padding:28px 20px}.top{flex-wrap:wrap}}
-
-/* Restored introduction layouts */
-.verse-card{text-align:center;padding:24px 18px;margin-bottom:22px;border:1px solid #d7bbff77;border-radius:18px;background:#ffffff12}
-.verse-text{font-size:clamp(19px,2.5vw,26px);line-height:2.1;color:#f5eaff}
-.verse-source{font-size:12px;color:#d7bbff;margin-top:8px}
-.portfolio-copy{white-space:pre-wrap;line-height:2;text-align:right;overflow-wrap:anywhere}
-.intro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.intro-card{min-height:unset;text-align:right}
-.intro-card .portfolio-copy{margin:10px 0 0;color:#eee6fa;font-size:14px}
-.goal-number{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:#a984f0;color:#1b1336;font-size:18px;font-weight:bold}
 </style>
 </head>
 <body>
@@ -108,8 +98,8 @@ label{font-size:13px;color:#f0e9ff}
   <select id="eSection"></select>
   <label>الوصف</label>
   <textarea id="eDescription" rows="3"></textarea>
-  <label>صور أو ملفات PDF (يمكن اختيار عدة ملفات)</label>
-  <input id="eFile" type="file" accept="image/*,.pdf" multiple>
+  <label>صورة أو PDF (اختياري)</label>
+  <input id="eFile" type="file" accept="image/*,.pdf">
   <label>رابط إلكتروني (اختياري)</label>
   <input id="eLink" type="url" placeholder="https://">
   <div class="actions">
@@ -127,12 +117,12 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const sections=[
  {name:"المقدمة",icon:"📖",sub:["المقدمة","الرؤية والرسالة","الأهداف العامة لسياسة التعليم في المملكة العربية السعودية"]},
- {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["المبادرات","توزيع المنهج الدراسي","المشاركات الفعالة في الفعاليات والمناسبات الوطنية","تفعيل حصص الاحتياط"]},
- {name:"التفاعل مع المجتمع المهني",icon:"👥",sub:["الزيارات التبادلية","مجتمعات التعلم المهنية","إقامة الدورات التدريبية والدروس التطبيقية","شهادات حضور الدورات التدريبية"]},
+ {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["شهادات الشكر والتقدير","الأنشطة الصفية واللاصفية","الجدول الدراسي"]},
+ {name:"التفاعل مع المجتمع المهني",icon:"👥"},
  {name:"التفاعل مع أولياء الأمور",icon:"💬"},
  {name:"التنوع في استراتيجيات التدريس",icon:"🧩"},
  {name:"تحسين نتائج المتعلمين",icon:"📈"},
- {name:"إعداد وتنفيذ خطة التعلم",icon:"📋"},
+ {name:"إعداد وتنفيذ خطة التعلم",icon:"📋",sub:["توزيع المنهج","الاختبارات","المذكرات"]},
  {name:"توظيف تقنيات ووسائل التعلم المناسبة",icon:"💻"},
  {name:"تهيئة البيئة التعليمية",icon:"🏫"},
  {name:"الإدارة الصفية",icon:"🎯"},
@@ -230,9 +220,10 @@ if(current===0){
  const s=sections[current];
  let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
  <h1>${s.icon} ${safe(s.name)}</h1>
- <p>${current===1?"أحرص على أداء واجباتي الوظيفية بكفاءة ومسؤولية، من خلال تنفيذ المبادرات التعليمية، والالتزام بتوزيع المنهج الدراسي، والمشاركة الفاعلة في الفعاليات والمناسبات الوطنية، وتفعيل حصص الاحتياط بما يحقق الاستفادة من الوقت التعليمي، ويسهم في تعزيز البيئة المدرسية وتحقيق الأهداف التربوية والتعليمية.":current===2?"أؤمن بأهمية التفاعل مع المجتمع المهني في تبادل الخبرات وتطوير الممارسات التعليمية، وأسعى إلى تعزيز التعاون المهني من خلال الزيارات التبادلية، والمشاركة في مجتمعات التعلم المهنية، وتقديم الدورات التدريبية والدروس التطبيقية، إلى جانب حضور البرامج التدريبية التي تسهم في تطوير مهاراتي المهنية، وتحسين جودة الأداء التعليمي، والارتقاء بمخرجات التعلم.":"استعرضي المحتوى والشواهد المرتبطة بهذا القسم."}</p></div>`;
+ <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
  if(s.sub){
-  html+='<div class="subnav">';
+  html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
+  '" onclick="openSection('+current+')">جميع الشواهد</button>';
   s.sub.forEach((v,j)=>{
    html+='<button class="'+(subCurrent===v?'selected':'')+
    '" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+safe(v)+'</button>';
@@ -240,10 +231,10 @@ if(current===0){
   html+='</div>';
  }
  if(admin)html+='<div class="actions"><button class="btn" onclick="openAdd()">＋ إضافة شاهد</button></div>';
-  // Keep older evidence visible in its original parent section without changing Supabase data.
-  const legacySections=current===1?["شهادات الشكر والتقدير","الأنشطة الصفية واللاصفية"]:[];
- const list=evidence.filter(e=>e.section===(subCurrent||s.name)||
- (!subCurrent&&s.sub&&(s.sub.includes(e.section)||legacySections.includes(e.section))));
+ const list=evidence.filter(e=>{
+  const sectionName=e.section==="توزيع المنهج الدراسي"?"الجدول الدراسي":e.section;
+  return sectionName===(subCurrent||s.name)||(!subCurrent&&s.sub&&s.sub.includes(sectionName));
+ });
  html+='<div class="cards">'+list.map(e=>{
   const u=validUrl(e.file_url);
   const image=u&&/\.(png|jpg|jpeg|webp|gif)(\?|$)/i.test(u);
@@ -252,14 +243,6 @@ if(current===0){
    <h3>${safe(e.title)}</h3><p>${safe(e.description)}</p>
    ${image?'<img class="preview" src="'+safe(u)+'" alt="صورة الشاهد">':''}
    ${u?'<p><a class="filelink" href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">فتح الشاهد ↗</a></p>':''}
-    ${(e.attachments||[]).length?`<div style="margin-top:16px;text-align:right">
-     <h4 style="color:#d7bbff">📎 مرفقات الشاهد</h4>
-     ${(e.attachments||[]).map(file=>`<div style="background:#ffffff12;border:1px solid #ffffff30;border-radius:12px;padding:12px;margin:8px 0">
-       <a class="filelink" href="${safe(validUrl(file.file_url)||'#')}" target="_blank" rel="noopener noreferrer">📄 ${safe(file.file_name)} ↗</a>
-       ${admin?`<button class="btn secondary" style="margin:5px;padding:6px 10px;font-size:12px" onclick="removeAttachment('${file.id}')">حذف المرفق</button>`:""}
-      </div>`).join("")}
-     </div>`:""}
-    ${admin?`<div class="actions"><button class="btn secondary" onclick="addAttachments('${e.id}')">＋ إضافة مرفقات</button></div>`:""}
 ${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
   </article>`;
  }).join("")+'</div>';
@@ -284,36 +267,18 @@ async function loadPortfolioText(pageId){
 
   const content=data?.content||"";
  
-// Preserve the original Supabase text while restoring the page layouts.
- const escaped=safe(content);
- let body="";
- if(pageId==="introduction"){
-  body=`<div class="verse-card" dir="rtl"><div class="verse-text">﴿ وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ ﴾</div><div class="verse-source">سورة التوبة، الآية ١٠٥</div></div><div class="portfolio-copy">${escaped||"لم تتم إضافة المحتوى بعد."}</div>`;
- }else if(pageId==="vision_mission"){
-  const normalized=content.replace(/\r/g,"").trim();
-  const visionMatch=normalized.match(/(?:^|\n)\s*(?:الرؤية|رؤيتي)\s*[:：\-–]?\s*/);
-  const missionMatch=normalized.match(/(?:^|\n)\s*(?:الرسالة|رسالتي)\s*[:：\-–]?\s*/);
-  let vision="",mission="";
-  if(missionMatch){
-   const at=missionMatch.index;
-   vision=normalized.slice(visionMatch?visionMatch.index+visionMatch[0].length:0,at).trim();
-   mission=normalized.slice(at+missionMatch[0].length).trim();
-  }else{
-   const chunks=normalized.split(/\n\s*\n/).filter(Boolean);
-   if(chunks.length>=2){vision=chunks[0].replace(/^\s*(?:الرؤية|رؤيتي)\s*[:：\-–]?/,"").trim();mission=chunks.slice(1).join("\n\n").replace(/^\s*(?:الرسالة|رسالتي)\s*[:：\-–]?/,"").trim();}
-   else vision=normalized.replace(/^\s*(?:الرؤية|رؤيتي)\s*[:：\-–]?/,"").trim();
-  }
-  body=`<div class="intro-grid"><div class="card intro-card"><div class="emoji">🔭</div><h3>الرؤية</h3><p class="portfolio-copy">${safe(vision)||"لم تتم إضافة نص الرؤية بعد."}</p></div><div class="card intro-card"><div class="emoji">✉️</div><h3>الرسالة</h3><p class="portfolio-copy">${safe(mission)||"لم تتم إضافة نص الرسالة بعد."}</p></div></div>`;
- }else if(pageId==="education_goals"){
-  const normalized=content.replace(/\r/g,"").trim();
-  let goals=normalized.split(/\n(?=\s*(?:[1-7١-٧][\s.)،\-–:]|[-•]))/).map(x=>x.trim()).filter(Boolean);
-  if(goals.length<2)goals=normalized.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
-  if(goals.length<2)goals=normalized.split("\n").map(x=>x.trim()).filter(Boolean);
-  goals=goals.map(g=>g.replace(/^\s*(?:[1-7١-٧][\s.)،\-–:]+|[-•]\s*)/,"").trim()).filter(Boolean);
-  const nums=["١","٢","٣","٤","٥","٦","٧"];
-  body=goals.length?`<div class="intro-grid">${goals.map((goal,i)=>`<div class="card intro-card"><div class="goal-number">${nums[i]||String(i+1)}</div><p class="portfolio-copy">${safe(goal)}</p></div>`).join("")}</div>`:'<div class="portfolio-copy">لم تتم إضافة المحتوى بعد.</div>';
- }
- box.innerHTML=`${body}${admin?`<div class="actions" style="margin-top:20px"><button class="btn" onclick="editPortfolioText('${pageId}')">✏️ تعديل المحتوى</button></div>`:""}`;
+box.innerHTML=`
+ <div style="white-space:pre-wrap;line-height:2;text-align:right">
+  ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
+ </div>
+ ${admin?`
+  <div class="actions" style="margin-top:20px">
+   <button class="btn" onclick="editPortfolioText('${pageId}')">
+    ✏️ تعديل المحتوى
+   </button>
+  </div>
+ `:""}
+`;
 
  }catch(error){
   box.textContent="تعذر تحميل المحتوى. يرجى المحاولة لاحقًا.";
@@ -323,14 +288,13 @@ async function loadPortfolioText(pageId){
 async function editPortfolioText(pageId){
  if(!admin)return;
  const {data,error}=await db.from("portfolio_content").select("content").eq("id",pageId).maybeSingle();
- if(error){alert("تعذر تحميل النص: "+error.message);return;}
- const updated=prompt("تعديل المحتوى:",data?.content||"");
- if(updated===null)return;
- const {error:saveError}=await db.from("portfolio_content").upsert({id:pageId,content:updated},{onConflict:"id"});
- if(saveError){alert("تعذر حفظ النص: "+saveError.message);return;}
+ if(error){alert("تعذر تحميل المحتوى: "+error.message);return;}
+ const revised=prompt("تعديل المحتوى:",data?.content||"");
+ if(revised===null)return;
+ const result=await db.from("portfolio_content").upsert({id:pageId,content:revised},{onConflict:"id"});
+ if(result.error){alert("تعذر حفظ المحتوى: "+result.error.message);return;}
  await loadPortfolioText(pageId);
 }
-function openModal(id){document.getElementById(id).classList.remove("hidden");}
 function closeModal(id){document.getElementById(id).classList.add("hidden");}
 function openAdd(){
  if(!admin)return;
@@ -344,51 +308,7 @@ function openAdd(){
 async function loadEvidence(){
  const {data,error}=await db.from("evidence").select("*").order("created_at",{ascending:false});
  if(error){console.error(error);return;}
- evidence=data||[];
- const {data:attachments,error:attachmentsError}=await db.from("evidence_attachments").select("*").order("created_at",{ascending:true});
- if(attachmentsError)console.error("تعذر تحميل المرفقات",attachmentsError);
- evidence.forEach(item=>{item.attachments=(attachments||[]).filter(file=>String(file.evidence_id)===String(item.id));});
- render();
-}
-const allowedFileTypes=["application/pdf","image/jpeg","image/png","image/webp","image/gif"];
-function validateFiles(files){
- if(files.some(f=>f.size>10*1024*1024))throw Error("يجب ألا يتجاوز حجم كل ملف 10 ميجابايت");
- if(files.some(f=>!allowedFileTypes.includes(f.type)))throw Error("اختاري صورًا أو ملفات PDF فقط");
-}
-async function uploadAttachment(evidenceId,file){
- const ext=file.name.split(".").pop().toLowerCase();
- const path=crypto.randomUUID()+"."+ext;
- const {error:uploadError}=await db.storage.from("portfolio-files").upload(path,file,{contentType:file.type});
- if(uploadError)throw uploadError;
- const url=db.storage.from("portfolio-files").getPublicUrl(path).data.publicUrl;
- const {error:insertError}=await db.from("evidence_attachments").insert({evidence_id:evidenceId,file_name:file.name,file_url:url,file_type:file.type,storage_path:path});
- if(insertError){await db.storage.from("portfolio-files").remove([path]);throw insertError;}
- return path;
-}
-async function addAttachments(id){
- if(!admin)return;
- const picker=document.createElement("input");picker.type="file";picker.accept="image/*,.pdf";picker.multiple=true;
- picker.onchange=async()=>{
-  const files=Array.from(picker.files||[]);if(!files.length)return;
-  try{
-   validateFiles(files);
-   for(const file of files)await uploadAttachment(id,file);
-   await loadEvidence();alert("تمت إضافة المرفقات بنجاح");
-  }catch(e){console.error(e);await loadEvidence();alert("تعذر إكمال رفع المرفقات: "+e.message);}
- };
- picker.click();
-}
-async function removeAttachment(id){
- if(!admin||!confirm("هل تريدين حذف هذا المرفق نهائيًا؟"))return;
- const item=evidence.flatMap(e=>e.attachments||[]).find(f=>String(f.id)===String(id));
- if(!item)return;
- const {data,error}=await db.from("evidence_attachments").delete().eq("id",id).select("id");
- if(error||!data?.length){alert("تعذر حذف المرفق: "+(error?.message||"لم يُحذف السجل"));return;}
- if(item.storage_path){
-  const {error:storageError}=await db.storage.from("portfolio-files").remove([item.storage_path]);
-  if(storageError)alert("حُذف المرفق من البطاقة، لكن تعذر تنظيف الملف من التخزين.");
- }
- await loadEvidence();
+ evidence=data||[];render();
 }
 async function checkAdmin(){
  const {data:{user}}=await db.auth.getUser();
@@ -425,35 +345,43 @@ document.getElementById("loginButton").onclick=async()=>{
 };
 document.getElementById("saveButton").onclick=async()=>{
  if(!admin)return;
- const b=document.getElementById("saveButton"),msg=document.getElementById("saveMessage");
+ const b=document.getElementById("saveButton");
+ const msg=document.getElementById("saveMessage");
  const title=document.getElementById("eTitle").value.trim();
  const section=document.getElementById("eSection").value;
  const description=document.getElementById("eDescription").value.trim();
- const files=Array.from(document.getElementById("eFile").files);
+ const file=document.getElementById("eFile").files[0];
  const link=document.getElementById("eLink").value.trim();
  if(!title){msg.textContent="أدخلي عنوان الشاهد";return;}
- try{validateFiles(files);}catch(e){msg.textContent=e.message;return;}
+ if(file&&file.size>10*1024*1024){msg.textContent="الملف أكبر من 10 ميجابايت";return;}
+ if(file&&!["application/pdf","image/jpeg","image/png","image/webp","image/gif"].includes(file.type)){
+  msg.textContent="اختاري صورة أو ملف PDF";return;
+ }
  if(link&&!validUrl(link)){msg.textContent="الرابط غير صحيح";return;}
- b.disabled=true;msg.textContent="جارٍ حفظ الشاهد والمرفقات...";
- let evidenceId=null;const uploadedPaths=[];
+ b.disabled=true;msg.textContent="جارٍ حفظ الشاهد...";
+ let path="";
  try{
-  const {data:created,error:createError}=await db.from("evidence")
-   .insert({title,section,description,file_url:validUrl(link)||null,file_type:link?"link":null}).select("id").single();
-  if(createError)throw createError;
-  evidenceId=created.id;
-  for(const file of files)uploadedPaths.push(await uploadAttachment(evidenceId,file));
+  let file_url=validUrl(link),file_type=link?"link":null;
+  if(file){
+   const ext=file.name.split(".").pop().toLowerCase();
+   path=crypto.randomUUID()+"."+ext;
+   const {error}=await db.storage.from("portfolio-files").upload(path,file,{contentType:file.type});
+   if(error)throw error;
+   file_url=db.storage.from("portfolio-files").getPublicUrl(path).data.publicUrl;
+   file_type=file.type;
+  }
+  const {error}=await db.from("evidence").insert({title,section,description,file_url,file_type});
+  if(error)throw error;
   closeModal("addModal");
   ["eTitle","eDescription","eLink","eFile"].forEach(id=>document.getElementById(id).value="");
-  msg.textContent="";await loadEvidence();
+  msg.textContent="";
+  await loadEvidence();
  }catch(e){
-  console.error(e);
-  // Avoid deleting the new card if the rollback itself fails.
-  if(evidenceId){const {error:rollbackError}=await db.from("evidence").delete().eq("id",evidenceId);if(rollbackError)console.error("Rollback failed",rollbackError);}
-  if(uploadedPaths.length)await db.storage.from("portfolio-files").remove(uploadedPaths);
   msg.textContent="تعذر الحفظ: "+e.message;
+  if(path)await db.storage.from("portfolio-files").remove([path]);
  }finally{b.disabled=false;}
 };
-
+ 
 let editingId = null;
 
 async function openEdit(id) {
@@ -584,24 +512,10 @@ async function saveEditedEvidence(changes) {
 }
 
 async function removeEvidence(id){
- if(!admin||!confirm("هل أنتِ متأكدة من حذف الشاهد وجميع مرفقاته نهائيًا؟ لا يمكن التراجع عن هذا الإجراء."))return;
- const item=evidence.find(e=>String(e.id)===String(id));
- if(!item)return;
- const paths=(item.attachments||[]).map(f=>f.storage_path).filter(Boolean);
- // Legacy uploaded file URLs are also stored in the same public bucket.
- const oldUrl=validUrl(item.file_url);
- const prefix=SUPABASE_URL+"/storage/v1/object/public/portfolio-files/";
- if(oldUrl.startsWith(prefix)){
-  const oldPath=decodeURIComponent(oldUrl.slice(prefix.length).split("?")[0]);
-  if(oldPath&&!oldPath.includes(".."))paths.push(oldPath);
- }
- const {data,error}=await db.from("evidence").delete().eq("id",id).select("id");
- if(error||!data?.length){alert("تعذر حذف الشاهد: "+(error?.message||"لم يُحذف السجل"));return;}
- if(paths.length){
-  const {error:storageError}=await db.storage.from("portfolio-files").remove([...new Set(paths)]);
-  if(storageError){console.error(storageError);alert("حُذفت البطاقة، لكن تعذر تنظيف بعض الملفات من التخزين.");}
- }
- await loadEvidence();
+ if(!admin||!confirm("هل تريدين حذف بطاقة الشاهد؟"))return;
+ const {error}=await db.from("evidence").delete().eq("id",id);
+ if(error)alert(error.message);
+ else await loadEvidence();
 }
 nav();render();loadEvidence();checkAdmin();
 </script>
