@@ -32,7 +32,7 @@ button{cursor:pointer}
 .card.click{cursor:pointer}
 .card.click:hover{transform:translateY(-5px);background:#ffffff25;border-color:#d3b2ff}
 .card .emoji{font-size:30px;margin-bottom:16px}
-.card h3{font-size:16px;line-height:1.7;margin:8px 0;color:#F5D88A}
+.card h3{font-size:16px;line-height:1.7;margin:8px 0;color:#FFD15C;font-weight:800;text-shadow:0 1px 2px #21143a}
 .card p{font-size:13px;color:#ded5ee;line-height:1.8}
 .btn{border:0;border-radius:12px;background:#a984f0;color:#160e30;padding:12px 18px;font-weight:bold}
 .btn:hover{background:#d0b5ff}
@@ -217,45 +217,50 @@ if(current===0){
  return;
 }
 
- const s=sections[current];
- let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
- <h1>${s.icon} ${safe(s.name)}</h1>
- <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
- if(s.name==="إعداد وتنفيذ خطة التعلم" && !subCurrent){
-  html+='<div class="cards">'+s.sub.map((v,j)=>
-   '<div class="card click" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+
-   '<div class="emoji">'+["📚","📝","📒"][j]+'</div><h3>'+safe(v)+'</h3><p>اضغطي لاستعراض الشواهد ←</p></div>'
-  ).join('')+'</div>';
-  el.innerHTML=html;
-  return;
- }
- if(s.sub){
-  html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
-  '" onclick="openSection('+current+')">جميع الشواهد</button>';
-  s.sub.forEach((v,j)=>{
-   html+='<button class="'+(subCurrent===v?'selected':'')+
-   '" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+safe(v)+'</button>';
+  const s=sections[current];
+  let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
+   <h1>${s.icon} ${safe(s.name)}</h1>
+   <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
+  // Main plan page: show three separate, clickable cards before its evidence.
+  if(current===6 && !subCurrent){
+   html+='<div class="cards">'+s.sub.map((name,j)=>
+    `<div class="card click" role="button" tabindex="0" onclick="openSection(6,sections[6].sub[${j}])" onkeydown="if(event.key==='Enter')openSection(6,sections[6].sub[${j}])"><div class="emoji">${['📚','📝','📒'][j]}</div><h3>${safe(name)}</h3><p>استعراض الشواهد ←</p></div>`
+   ).join('')+'</div>';
+   // Keep legacy evidence visible so no existing cards disappear.
+   const old=evidence.filter(e=>e.section===s.name);
+   if(old.length) html+='<h2 class="section-title">الشواهد السابقة</h2>'+evidenceCards(old);
+   if(admin)html+='<div class="actions"><button class="btn" onclick="openSection(6,sections[6].sub[0]);openAdd()">＋ إضافة شاهد</button></div>';
+   el.innerHTML=html;
+   return;
+  }
+  if(s.sub){
+   html+='<div class="subnav">';
+   if(subCurrent)html+='<button onclick="openSection('+current+')">العودة للأقسام</button>';
+   s.sub.forEach((v,j)=>{
+    html+='<button class="'+(subCurrent===v?'selected':'')+'" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+safe(v)+'</button>';
+   });
+   html+='</div>';
+  }
+  if(admin)html+='<div class="actions"><button class="btn" onclick="openAdd()">＋ إضافة شاهد</button></div>';
+  const list=evidence.filter(e=>{
+   if(current===1 && (subCurrent==='الجدول الدراسي'||!subCurrent) && e.section==='توزيع المنهج الدراسي')return true;
+   return e.section===(subCurrent||s.name)||(!subCurrent&&s.sub&&s.sub.includes(e.section));
   });
-  html+='</div>';
- }
- if(admin)html+='<div class="actions"><button class="btn" onclick="openAdd()">＋ إضافة شاهد</button></div>';
- const list=evidence.filter(e=>{
-  const sectionName=e.section==="توزيع المنهج الدراسي"?"الجدول الدراسي":e.section;
-  return sectionName===(subCurrent||s.name)||(!subCurrent&&s.sub&&s.sub.includes(sectionName));
- });
- html+='<div class="cards">'+list.map(e=>{
+  html+=evidenceCards(list);
+  if(!list.length)html+='<div class="empty">لا توجد شواهد منشورة في هذا القسم حتى الآن.</div>';
+  el.innerHTML=html;
+}
+function evidenceCards(list){
+ return '<div class="cards">'+list.map(e=>{
   const u=validUrl(e.file_url);
   const image=u&&/\.(png|jpg|jpeg|webp|gif)(\?|$)/i.test(u);
-  return `<article class="card">
-   <div class="emoji">📁</div>
+  return `<article class="card"><div class="emoji">📁</div>
    <h3>${safe(e.title)}</h3><p>${safe(e.description)}</p>
    ${image?'<img class="preview" src="'+safe(u)+'" alt="صورة الشاهد">':''}
    ${u?'<p><a class="filelink" href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">فتح الشاهد ↗</a></p>':''}
-${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
+   ${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
   </article>`;
- }).join("")+'</div>';
- if(!list.length)html+='<div class="empty">لا توجد شواهد منشورة في هذا القسم حتى الآن.</div>';
- el.innerHTML=html;
+ }).join('')+'</div>';
 }
  
 async function loadPortfolioText(pageId){
@@ -292,16 +297,6 @@ box.innerHTML=`
   box.textContent="تعذر تحميل المحتوى. يرجى المحاولة لاحقًا.";
   console.error(error);
  }
-}
-async function editPortfolioText(pageId){
- if(!admin)return;
- const {data,error}=await db.from("portfolio_content").select("content").eq("id",pageId).maybeSingle();
- if(error){alert("تعذر تحميل المحتوى: "+error.message);return;}
- const revised=prompt("تعديل المحتوى:",data?.content||"");
- if(revised===null)return;
- const result=await db.from("portfolio_content").upsert({id:pageId,content:revised},{onConflict:"id"});
- if(result.error){alert("تعذر حفظ المحتوى: "+result.error.message);return;}
- await loadPortfolioText(pageId);
 }
 function closeModal(id){document.getElementById(id).classList.add("hidden");}
 function openAdd(){
