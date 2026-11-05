@@ -98,7 +98,7 @@ label{font-size:13px;color:#f0e9ff}
   <select id="eSection"></select>
   <label>الوصف</label>
   <textarea id="eDescription" rows="3"></textarea>
-  <label>صورة أو PDF (اختياري)</label>
+  <label>صور أو ملفات PDF (يمكن اختيار عدة ملفات)</label>
   <input id="eFile" type="file" accept="image/*,.pdf" multiple>
   <label>رابط إلكتروني (اختياري)</label>
   <input id="eLink" type="url" placeholder="https://">
@@ -117,8 +117,8 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const sections=[
  {name:"المقدمة",icon:"📖",sub:["المقدمة","الرؤية والرسالة","الأهداف العامة لسياسة التعليم في المملكة العربية السعودية"]},
- {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["المبادرات","توزيع المنهج الدراسي","المشاركات الفعالة في الفعاليات والمناسبات الوطنية","تفعيل حصص الاحتياط"]},
- {name:"التفاعل مع المجتمع المهني",icon:"👥",sub:["الزيارات التبادلية","مجتمعات التعلم المهنية","إقامة الدورات التدريبية والدروس التطبيقية","شهادات حضور الدورات التدريبية"]},
+ {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["شهادات الشكر والتقدير","الأنشطة الصفية واللاصفية","توزيع المنهج الدراسي"]},
+ {name:"التفاعل مع المجتمع المهني",icon:"👥"},
  {name:"التفاعل مع أولياء الأمور",icon:"💬"},
  {name:"التنوع في استراتيجيات التدريس",icon:"🧩"},
  {name:"تحسين نتائج المتعلمين",icon:"📈"},
@@ -209,55 +209,21 @@ if(current===0){
     </button>
    `).join("")}
   </div>
- 
-  ${page.id==="introduction"?`
-   <div style="background:linear-gradient(135deg,#30204f,#49366d);border:1px solid #bba1e080;border-radius:22px;padding:30px 22px;margin-bottom:22px;text-align:center;box-shadow:0 8px 30px #00000020">
-    <div style="color:#e8d5ff;font-size:25px;margin-bottom:16px">۞</div>
-    <p style="font-size:clamp(20px,3vw,29px);line-height:2.4;color:#fff7e9;font-family:serif;margin:0">
-     ﴿ وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ ﴾
-    </p>
-    <div style="color:#d7bbff;font-size:13px;margin-top:16px">
-     سورة التوبة — الآية 105 (مقتطف)
-    </div>
-   </div>
-  `:""}
   <div class="card" id="portfolio-text">
    <p>جاري تحميل المحتوى...</p>
   </div>
-
  `;
  loadPortfolioText(page.id);
  return;
 }
 
  const s=sections[current];
- 
-let html=`<div class="hero">
- <span class="tag">ملف الإنجاز / القسم ${current+1}</span>
+ let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
  <h1>${s.icon} ${safe(s.name)}</h1>
- ${current===1?`
-  <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;margin-top:20px;text-align:right;line-height:2">
-   <p style="margin:0">
-    أحرص على أداء واجباتي الوظيفية بكفاءة ومسؤولية، من خلال تنفيذ المبادرات التعليمية، والالتزام بتوزيع المنهج الدراسي، والمشاركة الفاعلة في الفعاليات والمناسبات الوطنية، وتفعيل حصص الاحتياط بما يحقق الاستفادة من الوقت التعليمي، ويسهم في تعزيز البيئة المدرسية وتحقيق الأهداف التربوية والتعليمية.
-   </p>
-  </div>
- `:`
-  <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p>
- `}
-</div>`;
-
-if(current===2){
- html+=`
-  <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;margin:20px 0;text-align:right;line-height:2">
-   <p style="margin:0">
-    أؤمن بأهمية التفاعل مع المجتمع المهني في تبادل الخبرات وتطوير الممارسات التعليمية، وأسعى إلى تعزيز التعاون المهني من خلال الزيارات التبادلية، والمشاركة في مجتمعات التعلم المهنية، وتقديم الدورات التدريبية والدروس التطبيقية، إلى جانب حضور البرامج التدريبية التي تسهم في تطوير مهاراتي المهنية، وتحسين جودة الأداء التعليمي، والارتقاء بمخرجات التعلم.
-   </p>
-  </div>
- `;
-}
-
+ <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
  if(s.sub){
-  html+='<div class="subnav">';
+  html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
+  '" onclick="openSection('+current+')">جميع الشواهد</button>';
   s.sub.forEach((v,j)=>{
    html+='<button class="'+(subCurrent===v?'selected':'')+
    '" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+safe(v)+'</button>';
@@ -275,30 +241,14 @@ if(current===2){
    <h3>${safe(e.title)}</h3><p>${safe(e.description)}</p>
    ${image?'<img class="preview" src="'+safe(u)+'" alt="صورة الشاهد">':''}
    ${u?'<p><a class="filelink" href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">فتح الشاهد ↗</a></p>':''}
-   
-   ${(e.attachments||[]).length?`
-   <div style="margin-top:18px;text-align:right">
-   <h4 style="color:#d7bbff;margin-bottom:12px">📎 مرفقات الشاهد</h4>
-   ${(e.attachments||[]).map(file=>`
-   <div style="background:#ffffff12;border:1px solid #ffffff30;border-radius:12px;padding:12px;margin-bottom:8px">
-    <a class="filelink" href="${safe(validUrl(file.file_url)||'#')}"
-       target="_blank" rel="noopener noreferrer">
-     📄 ${safe(file.file_name)} ↗
-    </a>
-    
-   ${admin?`
-   <button class="btn secondary"
-   style="margin-right:10px;padding:6px 12px;font-size:12px"
-   onclick="removeAttachment('${file.id}')">
-  🗑️ حذف المرفق
-   </button>
-   `:""}
-
-   </div>
-  `).join("")}
- </div>
-`:""}
-
+    ${(e.attachments||[]).length?`<div style="margin-top:16px;text-align:right">
+     <h4 style="color:#d7bbff">📎 مرفقات الشاهد</h4>
+     ${(e.attachments||[]).map(file=>`<div style="background:#ffffff12;border:1px solid #ffffff30;border-radius:12px;padding:12px;margin:8px 0">
+       <a class="filelink" href="${safe(validUrl(file.file_url)||'#')}" target="_blank" rel="noopener noreferrer">📄 ${safe(file.file_name)} ↗</a>
+       ${admin?`<button class="btn secondary" style="margin:5px;padding:6px 10px;font-size:12px" onclick="removeAttachment('${file.id}')">حذف المرفق</button>`:""}
+      </div>`).join("")}
+     </div>`:""}
+    ${admin?`<div class="actions"><button class="btn secondary" onclick="addAttachments('${e.id}')">＋ إضافة مرفقات</button></div>`:""}
 ${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
   </article>`;
  }).join("")+'</div>';
@@ -319,59 +269,14 @@ async function loadPortfolioText(pageId){
 
   if(error)throw error;
 
-  if(!document.getElementById("portfolio-text") || current!==0)return;
+  if(!document.getElementById("portfolio-text"))return;
 
   const content=data?.content||"";
  
 box.innerHTML=`
-
- ${pageId==="vision_mission" && content.includes("الرسالة")
- ? `
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px">
-
-   <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;text-align:center">
-    <div style="font-size:35px">👁️</div>
-    <h2 style="color:#d7bbff">الرؤية</h2>
-    <p style="white-space:pre-wrap;line-height:2;text-align:right">
-     ${safe(content.split("الرسالة")[0].replace(/^\s*الرؤية\s*[:：]?\s*/,"").trim())}
-    </p>
-   </div>
-
-   <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;text-align:center">
-    <div style="font-size:35px">🎯</div>
-    <h2 style="color:#d7bbff">الرسالة</h2>
-    <p style="white-space:pre-wrap;line-height:2;text-align:right">
-     ${safe(content.split("الرسالة").slice(1).join("الرسالة").replace(/^\s*[:：]?\s*/,"").trim())}
-    </p>
-   </div>
-
-  </div>
- `
- 
- : pageId==="education_goals" && content.trim()
- ? `
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">
-   ${content.split(/\n\s*\n/).filter(x=>x.trim()).map((goal,i)=>`
-    <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:24px">
-     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-      <span style="background:#a984f0;color:#17122d;border-radius:12px;padding:10px 14px;font-weight:bold">
-       ${String(i+1).padStart(2,"0")}
-      </span>
-     </div>
-     <p style="white-space:pre-wrap;line-height:2;margin:0">
-      ${safe(goal.trim())}
-     </p>
-    </div>
-   `).join("")}
-  </div>
- `
- : `
-  <div style="white-space:pre-wrap;line-height:2;text-align:right">
-   ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
-  </div>
- `}
-
-
+ <div style="white-space:pre-wrap;line-height:2;text-align:right">
+  ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
+ </div>
  ${admin?`
   <div class="actions" style="margin-top:20px">
    <button class="btn" onclick="editPortfolioText('${pageId}')">
@@ -388,38 +293,15 @@ box.innerHTML=`
 }
 async function editPortfolioText(pageId){
  if(!admin)return;
- const box=document.getElementById("portfolio-text");
- if(!box)return;
- const {data,error}=await db.from("portfolio_content")
-  .select("content").eq("id",pageId).single();
- if(error){alert("تعذر تحميل النص للتعديل: "+error.message);return;}
- if(!document.getElementById("portfolio-text"))return;
- box.innerHTML=`
-  <h3>✏️ تعديل المحتوى</h3>
-  <textarea id="portfolio-editor" style="width:100%;min-height:300px;padding:16px;border-radius:14px;line-height:2;font:inherit;direction:rtl;box-sizing:border-box"></textarea>
-  <div class="actions" style="margin-top:16px">
-   <button class="btn" id="save-portfolio-text">💾 حفظ التعديلات</button>
-   <button class="btn secondary" id="cancel-portfolio-text">إلغاء</button>
-  </div>`;
- document.getElementById("portfolio-editor").value=data?.content||"";
- document.getElementById("cancel-portfolio-text").onclick=()=>loadPortfolioText(pageId);
- document.getElementById("save-portfolio-text").onclick=async()=>{
-  const content=document.getElementById("portfolio-editor").value;
-  const button=document.getElementById("save-portfolio-text");
-  button.disabled=true;button.textContent="جاري الحفظ...";
-  const {data:updated,error:saveError}=await db.from("portfolio_content")
-   .update({content,updated_at:new Date().toISOString()})
-   .eq("id",pageId).select("id");
-  if(saveError||!updated?.length){
-   alert("تعذر حفظ التعديلات: "+(saveError?.message||"تحققي من صلاحيات الإدارة"));
-   button.disabled=false;button.textContent="💾 حفظ التعديلات";
-   return;
-  }
-  alert("تم حفظ المحتوى بنجاح");
-  loadPortfolioText(pageId);
- };
+ const {data,error}=await db.from("portfolio_content").select("content").eq("id",pageId).maybeSingle();
+ if(error){alert("تعذر تحميل النص: "+error.message);return;}
+ const updated=prompt("تعديل المحتوى:",data?.content||"");
+ if(updated===null)return;
+ const {error:saveError}=await db.from("portfolio_content").upsert({id:pageId,content:updated},{onConflict:"id"});
+ if(saveError){alert("تعذر حفظ النص: "+saveError.message);return;}
+ await loadPortfolioText(pageId);
 }
-
+function openModal(id){document.getElementById(id).classList.remove("hidden");}
 function closeModal(id){document.getElementById(id).classList.add("hidden");}
 function openAdd(){
  if(!admin)return;
@@ -430,38 +312,55 @@ function openAdd(){
  ).join("");
  document.getElementById("addModal").classList.remove("hidden");
 }
-
 async function loadEvidence(){
- const {data,error}=await db
-  .from("evidence")
-  .select("*")
-  .order("created_at",{ascending:false});
-
- if(error){
-  console.error(error);
-  return;
- }
-
+ const {data,error}=await db.from("evidence").select("*").order("created_at",{ascending:false});
+ if(error){console.error(error);return;}
  evidence=data||[];
-
- const {data:attachments, error:attachmentsError}=await db
-  .from("evidence_attachments")
-  .select("*")
-  .order("created_at",{ascending:true});
-
- if(attachmentsError){
-  console.error(attachmentsError);
- }
-
- evidence.forEach(item=>{
-  item.attachments=(attachments||[]).filter(
-   file=>String(file.evidence_id)===String(item.id)
-  );
- });
-
+ const {data:attachments,error:attachmentsError}=await db.from("evidence_attachments").select("*").order("created_at",{ascending:true});
+ if(attachmentsError)console.error("تعذر تحميل المرفقات",attachmentsError);
+ evidence.forEach(item=>{item.attachments=(attachments||[]).filter(file=>String(file.evidence_id)===String(item.id));});
  render();
 }
-
+const allowedFileTypes=["application/pdf","image/jpeg","image/png","image/webp","image/gif"];
+function validateFiles(files){
+ if(files.some(f=>f.size>10*1024*1024))throw Error("يجب ألا يتجاوز حجم كل ملف 10 ميجابايت");
+ if(files.some(f=>!allowedFileTypes.includes(f.type)))throw Error("اختاري صورًا أو ملفات PDF فقط");
+}
+async function uploadAttachment(evidenceId,file){
+ const ext=file.name.split(".").pop().toLowerCase();
+ const path=crypto.randomUUID()+"."+ext;
+ const {error:uploadError}=await db.storage.from("portfolio-files").upload(path,file,{contentType:file.type});
+ if(uploadError)throw uploadError;
+ const url=db.storage.from("portfolio-files").getPublicUrl(path).data.publicUrl;
+ const {error:insertError}=await db.from("evidence_attachments").insert({evidence_id:evidenceId,file_name:file.name,file_url:url,file_type:file.type,storage_path:path});
+ if(insertError){await db.storage.from("portfolio-files").remove([path]);throw insertError;}
+ return path;
+}
+async function addAttachments(id){
+ if(!admin)return;
+ const picker=document.createElement("input");picker.type="file";picker.accept="image/*,.pdf";picker.multiple=true;
+ picker.onchange=async()=>{
+  const files=Array.from(picker.files||[]);if(!files.length)return;
+  try{
+   validateFiles(files);
+   for(const file of files)await uploadAttachment(id,file);
+   await loadEvidence();alert("تمت إضافة المرفقات بنجاح");
+  }catch(e){console.error(e);await loadEvidence();alert("تعذر إكمال رفع المرفقات: "+e.message);}
+ };
+ picker.click();
+}
+async function removeAttachment(id){
+ if(!admin||!confirm("هل تريدين حذف هذا المرفق نهائيًا؟"))return;
+ const item=evidence.flatMap(e=>e.attachments||[]).find(f=>String(f.id)===String(id));
+ if(!item)return;
+ const {data,error}=await db.from("evidence_attachments").delete().eq("id",id).select("id");
+ if(error||!data?.length){alert("تعذر حذف المرفق: "+(error?.message||"لم يُحذف السجل"));return;}
+ if(item.storage_path){
+  const {error:storageError}=await db.storage.from("portfolio-files").remove([item.storage_path]);
+  if(storageError)alert("حُذف المرفق من البطاقة، لكن تعذر تنظيف الملف من التخزين.");
+ }
+ await loadEvidence();
+}
 async function checkAdmin(){
  const {data:{user}}=await db.auth.getUser();
  admin=false;
@@ -497,107 +396,35 @@ document.getElementById("loginButton").onclick=async()=>{
 };
 document.getElementById("saveButton").onclick=async()=>{
  if(!admin)return;
- const b=document.getElementById("saveButton");
- const msg=document.getElementById("saveMessage");
+ const b=document.getElementById("saveButton"),msg=document.getElementById("saveMessage");
  const title=document.getElementById("eTitle").value.trim();
  const section=document.getElementById("eSection").value;
  const description=document.getElementById("eDescription").value.trim();
  const files=Array.from(document.getElementById("eFile").files);
  const link=document.getElementById("eLink").value.trim();
  if(!title){msg.textContent="أدخلي عنوان الشاهد";return;}
-
-if(files.some(file=>file.size>10*1024*1024)){
- msg.textContent="يجب ألا يتجاوز حجم كل ملف 10 ميجابايت";
- return;
-}
-if(files.some(file=>!["application/pdf","image/jpeg","image/png","image/webp","image/gif"].includes(file.type))){
- msg.textContent="اختاري صورًا أو ملفات PDF فقط";
- return;
-}
-
+ try{validateFiles(files);}catch(e){msg.textContent=e.message;return;}
  if(link&&!validUrl(link)){msg.textContent="الرابط غير صحيح";return;}
-
-b.disabled=true;
-msg.textContent="جارٍ حفظ الشاهد والمرفقات...";
-
-let evidenceId=null;
-const uploadedPaths=[];
-
-try{
-  // إنشاء الشاهد أولًا
-  const {data:created,error:createError}=await db
-    .from("evidence")
-    .insert({
-      title,
-      section,
-      description,
-      file_url:validUrl(link)||null,
-      file_type:link?"link":null
-    })
-    .select("id")
-    .single();
-
+ b.disabled=true;msg.textContent="جارٍ حفظ الشاهد والمرفقات...";
+ let evidenceId=null;const uploadedPaths=[];
+ try{
+  const {data:created,error:createError}=await db.from("evidence")
+   .insert({title,section,description,file_url:validUrl(link)||null,file_type:link?"link":null}).select("id").single();
   if(createError)throw createError;
   evidenceId=created.id;
-
-  // رفع كل ملف وربطه بالشاهد
-  for(const file of files){
-    const ext=file.name.split(".").pop().toLowerCase();
-    const path=crypto.randomUUID()+"."+ext;
-
-    const {error:uploadError}=await db.storage
-      .from("portfolio-files")
-      .upload(path,file,{contentType:file.type});
-
-    if(uploadError)throw uploadError;
-    uploadedPaths.push(path);
-
-    const url=db.storage
-      .from("portfolio-files")
-      .getPublicUrl(path).data.publicUrl;
-
-    const {error:attachError}=await db
-      .from("evidence_attachments")
-      .insert({
-        evidence_id:evidenceId,
-        file_name:file.name,
-        file_url:url,
-        file_type:file.type,
-        storage_path:path
-      });
-
-    if(attachError)throw attachError;
-  }
-
+  for(const file of files)uploadedPaths.push(await uploadAttachment(evidenceId,file));
   closeModal("addModal");
-
-  ["eTitle","eDescription","eLink","eFile"].forEach(id=>{
-    document.getElementById(id).value="";
-  });
-
-  msg.textContent="";
-  await loadEvidence();
-
-}catch(e){
+  ["eTitle","eDescription","eLink","eFile"].forEach(id=>document.getElementById(id).value="");
+  msg.textContent="";await loadEvidence();
+ }catch(e){
   console.error(e);
-
-  // التراجع عن الشاهد الجديد إذا فشل رفع أحد المرفقات
-  if(evidenceId){
-    await db.from("evidence").delete().eq("id",evidenceId);
-  }
-
-  if(uploadedPaths.length){
-    await db.storage.from("portfolio-files").remove(uploadedPaths);
-  }
-
+  // Avoid deleting the new card if the rollback itself fails.
+  if(evidenceId){const {error:rollbackError}=await db.from("evidence").delete().eq("id",evidenceId);if(rollbackError)console.error("Rollback failed",rollbackError);}
+  if(uploadedPaths.length)await db.storage.from("portfolio-files").remove(uploadedPaths);
   msg.textContent="تعذر الحفظ: "+e.message;
-
-}finally{
-  b.disabled=false;
-}
+ }finally{b.disabled=false;}
 };
 
- 
 let editingId = null;
 
 async function openEdit(id) {
@@ -727,99 +554,26 @@ async function saveEditedEvidence(changes) {
   alert("تم حفظ التعديل بنجاح");
 }
 
-
-
 async function removeEvidence(id){
- if(!admin)return;
-
- if(!confirm("هل أنتِ متأكدة من حذف الشاهد وجميع مرفقاته نهائيًا؟ لا يمكن التراجع عن هذا الإجراء."))return;
-
+ if(!admin||!confirm("هل أنتِ متأكدة من حذف الشاهد وجميع مرفقاته نهائيًا؟ لا يمكن التراجع عن هذا الإجراء."))return;
  const item=evidence.find(e=>String(e.id)===String(id));
  if(!item)return;
-
- const paths=(item.attachments||[])
-  .map(file=>file.storage_path)
-  .filter(Boolean);
-
- const {data:deleted,error}=await db
-  .from("evidence")
-  .delete()
-  .eq("id",id)
-  .select("id");
-
- if(error){
-  alert("تعذر حذف الشاهد: "+error.message);
-  return;
+ const paths=(item.attachments||[]).map(f=>f.storage_path).filter(Boolean);
+ // Legacy uploaded file URLs are also stored in the same public bucket.
+ const oldUrl=validUrl(item.file_url);
+ const prefix=SUPABASE_URL+"/storage/v1/object/public/portfolio-files/";
+ if(oldUrl.startsWith(prefix)){
+  const oldPath=decodeURIComponent(oldUrl.slice(prefix.length).split("?")[0]);
+  if(oldPath&&!oldPath.includes(".."))paths.push(oldPath);
  }
-
- if(!deleted || deleted.length===0){
-  alert("لم يتم تأكيد حذف الشاهد. لم تُحذف الملفات.");
-  return;
- }
-
+ const {data,error}=await db.from("evidence").delete().eq("id",id).select("id");
+ if(error||!data?.length){alert("تعذر حذف الشاهد: "+(error?.message||"لم يُحذف السجل"));return;}
  if(paths.length){
-  const {error:storageError}=await db.storage
-   .from("portfolio-files")
-   .remove(paths);
-
-  if(storageError){
-   console.error(storageError);
-   alert("حُذفت البطاقة، لكن تعذر حذف بعض الملفات من التخزين.");
-  }
+  const {error:storageError}=await db.storage.from("portfolio-files").remove([...new Set(paths)]);
+  if(storageError){console.error(storageError);alert("حُذفت البطاقة، لكن تعذر تنظيف بعض الملفات من التخزين.");}
  }
-
  await loadEvidence();
 }
-
- // حذف بطاقة الشاهد وسجلات المرفقات المرتبطة بها
- const {error}=await db.from("evidence")
-  .delete()
-  .eq("id",id);
-
- if(error){
-  alert("تعذر حذف بطاقة الشاهد: "+error.message);
-  return;
- }
-
- await loadEvidence();
-}
-
- 
-async function removeAttachment(id){
- if(!admin)return;
-
- const item=evidence.flatMap(e=>e.attachments||[])
-  .find(file=>String(file.id)===String(id));
-
- if(!item)return;
-
- if(!confirm("هل تريدين حذف هذا المرفق فقط؟"))return;
-
- const {error}=await db
-  .from("evidence_attachments")
-  .delete()
-  .eq("id",id);
-
- if(error){
-  alert("تعذر حذف المرفق: "+error.message);
-  return;
- }
-
- // حذف الملف من التخزين بعد حذف سجله
- if(item.storage_path){
-  const {error:storageError}=await db.storage
-   .from("portfolio-files")
-   .remove([item.storage_path]);
-
-  if(storageError){
-   console.error("تعذر حذف الملف من التخزين:",storageError);
-   alert("تم حذف المرفق من الشاهد، لكن تعذر حذف الملف من التخزين.");
-  }
- }
-
- await loadEvidence();
-}
-
 nav();render();loadEvidence();checkAdmin();
 </script>
 </body>
