@@ -117,8 +117,8 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const sections=[
  {name:"المقدمة",icon:"📖",sub:["المقدمة","الرؤية والرسالة","الأهداف العامة لسياسة التعليم في المملكة العربية السعودية"]},
- {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["شهادات الشكر والتقدير","الأنشطة الصفية واللاصفية","توزيع المنهج الدراسي"]},
- {name:"التفاعل مع المجتمع المهني",icon:"👥"},
+ {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["المبادرات","توزيع المنهج الدراسي","المشاركات الفعالة في الفعاليات والمناسبات الوطنية","تفعيل حصص الاحتياط"]},
+ {name:"التفاعل مع المجتمع المهني",icon:"👥",sub:["الزيارات التبادلية","مجتمعات التعلم المهنية","إقامة الدورات التدريبية والدروس التطبيقية","شهادات حضور الدورات التدريبية"]},
  {name:"التفاعل مع أولياء الأمور",icon:"💬"},
  {name:"التنوع في استراتيجيات التدريس",icon:"🧩"},
  {name:"تحسين نتائج المتعلمين",icon:"📈"},
@@ -231,8 +231,10 @@ if(current===0){
   html+='</div>';
  }
  if(admin)html+='<div class="actions"><button class="btn" onclick="openAdd()">＋ إضافة شاهد</button></div>';
+  // Keep older evidence visible in its original parent section without changing Supabase data.
+  const legacySections=current===1?["شهادات الشكر والتقدير","الأنشطة الصفية واللاصفية"]:[];
  const list=evidence.filter(e=>e.section===(subCurrent||s.name)||
- (!subCurrent&&s.sub&&s.sub.includes(e.section)));
+ (!subCurrent&&s.sub&&(s.sub.includes(e.section)||legacySections.includes(e.section))));
  html+='<div class="cards">'+list.map(e=>{
   const u=validUrl(e.file_url);
   const image=u&&/\.(png|jpg|jpeg|webp|gif)(\?|$)/i.test(u);
