@@ -99,7 +99,7 @@ label{font-size:13px;color:#f0e9ff}
   <label>الوصف</label>
   <textarea id="eDescription" rows="3"></textarea>
   <label>صورة أو PDF (اختياري)</label>
-  <input id="eFile" type="file" accept="image/*,.pdf">
+  <input id="eFile" type="file" accept="image/*,.pdf" multiple>
   <label>رابط إلكتروني (اختياري)</label>
   <input id="eLink" type="url" placeholder="https://">
   <div class="actions">
@@ -275,6 +275,30 @@ if(current===2){
    <h3>${safe(e.title)}</h3><p>${safe(e.description)}</p>
    ${image?'<img class="preview" src="'+safe(u)+'" alt="صورة الشاهد">':''}
    ${u?'<p><a class="filelink" href="'+safe(u)+'" target="_blank" rel="noopener noreferrer">فتح الشاهد ↗</a></p>':''}
+   
+   ${(e.attachments||[]).length?`
+   <div style="margin-top:18px;text-align:right">
+   <h4 style="color:#d7bbff;margin-bottom:12px">📎 مرفقات الشاهد</h4>
+   ${(e.attachments||[]).map(file=>`
+   <div style="background:#ffffff12;border:1px solid #ffffff30;border-radius:12px;padding:12px;margin-bottom:8px">
+    <a class="filelink" href="${safe(validUrl(file.file_url)||'#')}"
+       target="_blank" rel="noopener noreferrer">
+     📄 ${safe(file.file_name)} ↗
+    </a>
+    
+   ${admin?`
+   <button class="btn secondary"
+   style="margin-right:10px;padding:6px 12px;font-size:12px"
+   onclick="removeAttachment('${file.id}')">
+  🗑️ حذف المرفق
+   </button>
+   `:""}
+
+   </div>
+  `).join("")}
+ </div>
+`:""}
+
 ${admin?'<div class="actions"><button class="btn" onclick="openEdit(\''+e.id+'\')">✏️ تعديل الشاهد</button><button class="btn secondary" onclick="removeEvidence(\''+e.id+'\')">حذف البطاقة</button></div>':''}
   </article>`;
  }).join("")+'</div>';
@@ -406,11 +430,38 @@ function openAdd(){
  ).join("");
  document.getElementById("addModal").classList.remove("hidden");
 }
+
 async function loadEvidence(){
- const {data,error}=await db.from("evidence").select("*").order("created_at",{ascending:false});
- if(error){console.error(error);return;}
- evidence=data||[];render();
+ const {data,error}=await db
+  .from("evidence")
+  .select("*")
+  .order("created_at",{ascending:false});
+
+ if(error){
+  console.error(error);
+  return;
+ }
+
+ evidence=data||[];
+
+ const {data:attachments, error:attachmentsError}=await db
+  .from("evidence_attachments")
+  .select("*")
+  .order("created_at",{ascending:true});
+
+ if(attachmentsError){
+  console.error(attachmentsError);
+ }
+
+ evidence.forEach(item=>{
+  item.attachments=(attachments||[]).filter(
+   file=>String(file.evidence_id)===String(item.id)
+  );
+ });
+
+ render();
 }
+
 async function checkAdmin(){
  const {data:{user}}=await db.auth.getUser();
  admin=false;
@@ -451,37 +502,101 @@ document.getElementById("saveButton").onclick=async()=>{
  const title=document.getElementById("eTitle").value.trim();
  const section=document.getElementById("eSection").value;
  const description=document.getElementById("eDescription").value.trim();
- const file=document.getElementById("eFile").files[0];
+ const files=Array.from(document.getElementById("eFile").files);
  const link=document.getElementById("eLink").value.trim();
  if(!title){msg.textContent="أدخلي عنوان الشاهد";return;}
- if(file&&file.size>10*1024*1024){msg.textContent="الملف أكبر من 10 ميجابايت";return;}
- if(file&&!["application/pdf","image/jpeg","image/png","image/webp","image/gif"].includes(file.type)){
-  msg.textContent="اختاري صورة أو ملف PDF";return;
- }
+
+if(files.some(file=>file.size>10*1024*1024)){
+ msg.textContent="يجب ألا يتجاوز حجم كل ملف 10 ميجابايت";
+ return;
+}
+if(files.some(file=>!["application/pdf","image/jpeg","image/png","image/webp","image/gif"].includes(file.type))){
+ msg.textContent="اختاري صورًا أو ملفات PDF فقط";
+ return;
+}
+
  if(link&&!validUrl(link)){msg.textContent="الرابط غير صحيح";return;}
- b.disabled=true;msg.textContent="جارٍ حفظ الشاهد...";
- let path="";
- try{
-  let file_url=validUrl(link),file_type=link?"link":null;
-  if(file){
-   const ext=file.name.split(".").pop().toLowerCase();
-   path=crypto.randomUUID()+"."+ext;
-   const {error}=await db.storage.from("portfolio-files").upload(path,file,{contentType:file.type});
-   if(error)throw error;
-   file_url=db.storage.from("portfolio-files").getPublicUrl(path).data.publicUrl;
-   file_type=file.type;
+
+b.disabled=true;
+msg.textContent="جارٍ حفظ الشاهد والمرفقات...";
+
+let evidenceId=null;
+const uploadedPaths=[];
+
+try{
+  // إنشاء الشاهد أولًا
+  const {data:created,error:createError}=await db
+    .from("evidence")
+    .insert({
+      title,
+      section,
+      description,
+      file_url:validUrl(link)||null,
+      file_type:link?"link":null
+    })
+    .select("id")
+    .single();
+
+  if(createError)throw createError;
+  evidenceId=created.id;
+
+  // رفع كل ملف وربطه بالشاهد
+  for(const file of files){
+    const ext=file.name.split(".").pop().toLowerCase();
+    const path=crypto.randomUUID()+"."+ext;
+
+    const {error:uploadError}=await db.storage
+      .from("portfolio-files")
+      .upload(path,file,{contentType:file.type});
+
+    if(uploadError)throw uploadError;
+    uploadedPaths.push(path);
+
+    const url=db.storage
+      .from("portfolio-files")
+      .getPublicUrl(path).data.publicUrl;
+
+    const {error:attachError}=await db
+      .from("evidence_attachments")
+      .insert({
+        evidence_id:evidenceId,
+        file_name:file.name,
+        file_url:url,
+        file_type:file.type,
+        storage_path:path
+      });
+
+    if(attachError)throw attachError;
   }
-  const {error}=await db.from("evidence").insert({title,section,description,file_url,file_type});
-  if(error)throw error;
+
   closeModal("addModal");
-  ["eTitle","eDescription","eLink","eFile"].forEach(id=>document.getElementById(id).value="");
+
+  ["eTitle","eDescription","eLink","eFile"].forEach(id=>{
+    document.getElementById(id).value="";
+  });
+
   msg.textContent="";
   await loadEvidence();
- }catch(e){
+
+}catch(e){
+  console.error(e);
+
+  // التراجع عن الشاهد الجديد إذا فشل رفع أحد المرفقات
+  if(evidenceId){
+    await db.from("evidence").delete().eq("id",evidenceId);
+  }
+
+  if(uploadedPaths.length){
+    await db.storage.from("portfolio-files").remove(uploadedPaths);
+  }
+
   msg.textContent="تعذر الحفظ: "+e.message;
-  if(path)await db.storage.from("portfolio-files").remove([path]);
- }finally{b.disabled=false;}
+
+}finally{
+  b.disabled=false;
+}
 };
+
  
 let editingId = null;
 
@@ -612,12 +727,99 @@ async function saveEditedEvidence(changes) {
   alert("تم حفظ التعديل بنجاح");
 }
 
+
+
 async function removeEvidence(id){
- if(!admin||!confirm("هل تريدين حذف بطاقة الشاهد؟"))return;
- const {error}=await db.from("evidence").delete().eq("id",id);
- if(error)alert(error.message);
- else await loadEvidence();
+ if(!admin)return;
+
+ if(!confirm("هل أنتِ متأكدة من حذف الشاهد وجميع مرفقاته نهائيًا؟ لا يمكن التراجع عن هذا الإجراء."))return;
+
+ const item=evidence.find(e=>String(e.id)===String(id));
+ if(!item)return;
+
+ const paths=(item.attachments||[])
+  .map(file=>file.storage_path)
+  .filter(Boolean);
+
+ const {data:deleted,error}=await db
+  .from("evidence")
+  .delete()
+  .eq("id",id)
+  .select("id");
+
+ if(error){
+  alert("تعذر حذف الشاهد: "+error.message);
+  return;
+ }
+
+ if(!deleted || deleted.length===0){
+  alert("لم يتم تأكيد حذف الشاهد. لم تُحذف الملفات.");
+  return;
+ }
+
+ if(paths.length){
+  const {error:storageError}=await db.storage
+   .from("portfolio-files")
+   .remove(paths);
+
+  if(storageError){
+   console.error(storageError);
+   alert("حُذفت البطاقة، لكن تعذر حذف بعض الملفات من التخزين.");
+  }
+ }
+
+ await loadEvidence();
 }
+
+ // حذف بطاقة الشاهد وسجلات المرفقات المرتبطة بها
+ const {error}=await db.from("evidence")
+  .delete()
+  .eq("id",id);
+
+ if(error){
+  alert("تعذر حذف بطاقة الشاهد: "+error.message);
+  return;
+ }
+
+ await loadEvidence();
+}
+
+ 
+async function removeAttachment(id){
+ if(!admin)return;
+
+ const item=evidence.flatMap(e=>e.attachments||[])
+  .find(file=>String(file.id)===String(id));
+
+ if(!item)return;
+
+ if(!confirm("هل تريدين حذف هذا المرفق فقط؟"))return;
+
+ const {error}=await db
+  .from("evidence_attachments")
+  .delete()
+  .eq("id",id);
+
+ if(error){
+  alert("تعذر حذف المرفق: "+error.message);
+  return;
+ }
+
+ // حذف الملف من التخزين بعد حذف سجله
+ if(item.storage_path){
+  const {error:storageError}=await db.storage
+   .from("portfolio-files")
+   .remove([item.storage_path]);
+
+  if(storageError){
+   console.error("تعذر حذف الملف من التخزين:",storageError);
+   alert("تم حذف المرفق من الشاهد، لكن تعذر حذف الملف من التخزين.");
+  }
+ }
+
+ await loadEvidence();
+}
+
 nav();render();loadEvidence();checkAdmin();
 </script>
 </body>
