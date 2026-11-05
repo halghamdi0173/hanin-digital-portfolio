@@ -52,6 +52,16 @@ label{font-size:13px;color:#f0e9ff}
 .empty{padding:35px;text-align:center;color:#e3d7f8;border:1px dashed #ffffff50;border-radius:18px;margin-top:20px}
 .footer{text-align:center;color:#c8b8e2;padding:40px 0 10px;font-size:12px}
 @media(max-width:850px){.layout{display:block}.sidebar{width:100%;padding:12px}.brand{padding:8px}.sidebar nav{display:flex;overflow-x:auto;gap:5px}.nav{min-width:170px;text-align:center}.main{padding:18px}.hero{padding:28px 20px}.top{flex-wrap:wrap}}
+
+/* Restored introduction layouts */
+.verse-card{text-align:center;padding:24px 18px;margin-bottom:22px;border:1px solid #d7bbff77;border-radius:18px;background:#ffffff12}
+.verse-text{font-size:clamp(19px,2.5vw,26px);line-height:2.1;color:#f5eaff}
+.verse-source{font-size:12px;color:#d7bbff;margin-top:8px}
+.portfolio-copy{white-space:pre-wrap;line-height:2;text-align:right;overflow-wrap:anywhere}
+.intro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.intro-card{min-height:unset;text-align:right}
+.intro-card .portfolio-copy{margin:10px 0 0;color:#eee6fa;font-size:14px}
+.goal-number{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:#a984f0;color:#1b1336;font-size:18px;font-weight:bold}
 </style>
 </head>
 <body>
@@ -274,18 +284,36 @@ async function loadPortfolioText(pageId){
 
   const content=data?.content||"";
  
-box.innerHTML=`
- <div style="white-space:pre-wrap;line-height:2;text-align:right">
-  ${content?safe(content):"لم تتم إضافة المحتوى بعد."}
- </div>
- ${admin?`
-  <div class="actions" style="margin-top:20px">
-   <button class="btn" onclick="editPortfolioText('${pageId}')">
-    ✏️ تعديل المحتوى
-   </button>
-  </div>
- `:""}
-`;
+// Preserve the original Supabase text while restoring the page layouts.
+ const escaped=safe(content);
+ let body="";
+ if(pageId==="introduction"){
+  body=`<div class="verse-card" dir="rtl"><div class="verse-text">﴿ وَقُلِ اعْمَلُوا فَسَيَرَى اللَّهُ عَمَلَكُمْ وَرَسُولُهُ وَالْمُؤْمِنُونَ ﴾</div><div class="verse-source">سورة التوبة، الآية ١٠٥</div></div><div class="portfolio-copy">${escaped||"لم تتم إضافة المحتوى بعد."}</div>`;
+ }else if(pageId==="vision_mission"){
+  const normalized=content.replace(/\r/g,"").trim();
+  const visionMatch=normalized.match(/(?:^|\n)\s*(?:الرؤية|رؤيتي)\s*[:：\-–]?\s*/);
+  const missionMatch=normalized.match(/(?:^|\n)\s*(?:الرسالة|رسالتي)\s*[:：\-–]?\s*/);
+  let vision="",mission="";
+  if(missionMatch){
+   const at=missionMatch.index;
+   vision=normalized.slice(visionMatch?visionMatch.index+visionMatch[0].length:0,at).trim();
+   mission=normalized.slice(at+missionMatch[0].length).trim();
+  }else{
+   const chunks=normalized.split(/\n\s*\n/).filter(Boolean);
+   if(chunks.length>=2){vision=chunks[0].replace(/^\s*(?:الرؤية|رؤيتي)\s*[:：\-–]?/,"").trim();mission=chunks.slice(1).join("\n\n").replace(/^\s*(?:الرسالة|رسالتي)\s*[:：\-–]?/,"").trim();}
+   else vision=normalized.replace(/^\s*(?:الرؤية|رؤيتي)\s*[:：\-–]?/,"").trim();
+  }
+  body=`<div class="intro-grid"><div class="card intro-card"><div class="emoji">🔭</div><h3>الرؤية</h3><p class="portfolio-copy">${safe(vision)||"لم تتم إضافة نص الرؤية بعد."}</p></div><div class="card intro-card"><div class="emoji">✉️</div><h3>الرسالة</h3><p class="portfolio-copy">${safe(mission)||"لم تتم إضافة نص الرسالة بعد."}</p></div></div>`;
+ }else if(pageId==="education_goals"){
+  const normalized=content.replace(/\r/g,"").trim();
+  let goals=normalized.split(/\n(?=\s*(?:[1-7١-٧][\s.)،\-–:]|[-•]))/).map(x=>x.trim()).filter(Boolean);
+  if(goals.length<2)goals=normalized.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
+  if(goals.length<2)goals=normalized.split("\n").map(x=>x.trim()).filter(Boolean);
+  goals=goals.map(g=>g.replace(/^\s*(?:[1-7١-٧][\s.)،\-–:]+|[-•]\s*)/,"").trim()).filter(Boolean);
+  const nums=["١","٢","٣","٤","٥","٦","٧"];
+  body=goals.length?`<div class="intro-grid">${goals.map((goal,i)=>`<div class="card intro-card"><div class="goal-number">${nums[i]||String(i+1)}</div><p class="portfolio-copy">${safe(goal)}</p></div>`).join("")}</div>`:'<div class="portfolio-copy">لم تتم إضافة المحتوى بعد.</div>';
+ }
+ box.innerHTML=`${body}${admin?`<div class="actions" style="margin-top:20px"><button class="btn" onclick="editPortfolioText('${pageId}')">✏️ تعديل المحتوى</button></div>`:""}`;
 
  }catch(error){
   box.textContent="تعذر تحميل المحتوى. يرجى المحاولة لاحقًا.";
