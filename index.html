@@ -117,7 +117,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const sections=[
  {name:"المقدمة",icon:"📖",sub:["المقدمة","الرؤية والرسالة","الأهداف العامة لسياسة التعليم في المملكة العربية السعودية"]},
- {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["شهادات الشكر والتقدير","الأنشطة الصفية واللاصفية","توزيع المنهج الدراسي"]},
+ {name:"أداء الواجبات الوظيفية",icon:"💼",sub:["المبادرات","توزيع المنهج الدراسي","المشاركات الفعالة في الفعاليات والمناسبات الوطنية","تفعيل حصص الاحتياط"]},
  {name:"التفاعل مع المجتمع المهني",icon:"👥"},
  {name:"التفاعل مع أولياء الأمور",icon:"💬"},
  {name:"التنوع في استراتيجيات التدريس",icon:"🧩"},
@@ -231,12 +231,23 @@ if(current===0){
 }
 
  const s=sections[current];
- let html=`<div class="hero"><span class="tag">ملف الإنجاز / القسم ${current+1}</span>
+ 
+let html=`<div class="hero">
+ <span class="tag">ملف الإنجاز / القسم ${current+1}</span>
  <h1>${s.icon} ${safe(s.name)}</h1>
- <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p></div>`;
+ ${current===1?`
+  <div style="background:#ffffff15;border:1px solid #ffffff40;border-radius:20px;padding:25px;margin-top:20px;text-align:right;line-height:2">
+   <p style="margin:0">
+    أحرص على أداء واجباتي الوظيفية بكفاءة ومسؤولية، من خلال تنفيذ المبادرات التعليمية، والالتزام بتوزيع المنهج الدراسي، والمشاركة الفاعلة في الفعاليات والمناسبات الوطنية، وتفعيل حصص الاحتياط بما يحقق الاستفادة من الوقت التعليمي، ويسهم في تعزيز البيئة المدرسية وتحقيق الأهداف التربوية والتعليمية.
+   </p>
+  </div>
+ `:`
+  <p>استعرضي المحتوى والشواهد المرتبطة بهذا القسم.</p>
+ `}
+</div>`;
+
  if(s.sub){
-  html+='<div class="subnav"><button class="'+(!subCurrent?'selected':'')+
-  '" onclick="openSection('+current+')">جميع الشواهد</button>';
+  html+='<div class="subnav">';
   s.sub.forEach((v,j)=>{
    html+='<button class="'+(subCurrent===v?'selected':'')+
    '" onclick="openSection('+current+',sections['+current+'].sub['+j+'])">'+safe(v)+'</button>';
